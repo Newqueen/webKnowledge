@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <input id="input" type="text">
+</body>
+</html>
+<script type="application/javascript">
+  function throttle(fn, time) {
+    let canRun = true;
+    const wait = time || 500;
+    // 每次触发事件时都判断当前是否有等待执行的延时函数
+    return function () {
+      if (!canRun) return;
+      canRun = false;
+      setTimeout(() => {
+        fn.apply(this, arguments);
+        canRun = true;
+      }, wait);
+    };
+  }
+  function say() { console.log('debounce is success'); }
+  const inp = document.getElementById('input');
+  inp.addEventListener('input', throttle(say, 500, false)); // 防抖
+</script>
