@@ -5,24 +5,141 @@
     <title>Title</title>
 </head>
 <body>
-    <input id="input" type="text">
+<div id="root">
+    <div id="child1">
+        <div id="child1-1"></div>
+        <div id="child1-2">
+            <div id="child1-2-1"></div>
+        </div>
+    </div>
+    <div id="child2">
+        <div id="child2-1"></div>
+        <div id="child2-2"></div>
+    </div>
+    <div id="child3"></div>
+</div>
 </body>
 </html>
 <script type="application/javascript">
-  function throttle(fn, time) {
-    let canRun = true;
-    const wait = time || 500;
-    // 每次触发事件时都判断当前是否有等待执行的延时函数
-    return function () {
-      if (!canRun) return;
-      canRun = false;
-      setTimeout(() => {
-        fn.apply(this, arguments);
-        canRun = true;
-      }, wait);
-    };
+//   function deepTraversal(node,nodeList) {
+//     if (node) {
+//       nodeList.push(node);
+//       var children = node.children;
+//       for (var i = 0; i < children.length; i++)
+// //每次递归的时候将  需要遍历的节点  和 节点所存储的数组传下去
+//         deepTraversal(children[i],nodeList);
+//     }
+//     return nodeList;
+//   }
+//   var root = document.getElementById('root')
+//   console.log(deepTraversal(root,nodeList=[])); // ['1', '1-1', '1-2', '1-2-1', '2', '2-1', '2-2']
+
+function deepTraversal2(node) {
+  let nodes = [];
+  let stack = [];
+  if (node) {
+    stack.push(node);
+    while (stack.length) {
+      console.log('stack', stack);
+      let item = stack.shift();
+      console.log('item', item);
+      let children = item.children;
+      console.log('children', children);
+      nodes.push(item);
+      console.log('nodesss', nodes);
+      // 队列，先进先出
+      for (let i = 0; i < children.length; i++) {
+        stack.push(children[i])
+      }
+      console.log('==============================')
+    }
   }
-  function say() { console.log('debounce is success'); }
-  const inp = document.getElementById('input');
-  inp.addEventListener('input', throttle(say, 500, false)); // 防抖
+  return nodes
+}
+  var root2 = document.getElementById('root')
+  console.log(deepTraversal2(root2))
+  // Function.prototype.myCall = function(context) {
+  //   // context 运行时的上下文
+  //   console.log(context);
+  //   context = context ? Object(context) : window;
+  //   context.fn = this;  // this指代函数(Product)， Product.myCall
+  //   let args = [...arguments].slice(1);  //arguments[0]: this(Food)
+  //   let r = context.fn(...args);
+  //   delete context.fn;
+  //   return r;
+  // };
+  //
+  // function Product(name, price) {
+  //   this.name = name;
+  //   this.price = price;
+  // }
+  // function Food(name, price) {
+  //   Product.myCall(this, name, price);
+  //   this.category = 'food';
+  // }
+  // var cheese = new Food('feta', 5);
+  // console.log(cheese);
+
+  // Function.prototype.myBind = function(context) {
+  //   const self = this;
+  //   return function() {
+  //     return self.apply(context);
+  //   }
+  // }
+  //
+  // var value = 2;
+  // var foo = {
+  //   value: 1
+  // };
+  //
+  // function bar() {
+  //   return this.value;
+  // }
+  //
+  // var bindFoo = bar.myBind(foo);
+  //
+  // bindFoo(); // 1
+  //
+  // // 将数组添加到另一个数组
+  // const array = ['a', 'b'];
+  // const elements = [0, 1, 2];
+  // array.push.myApply(array, elements);
+  // console.log(array); // ["a", "b", 0, 1, 2]
+  Function.prototype.myBind = function(context) {
+    if (typeof this !== "function") {
+      throw new Error("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+    const self = this;
+    // 因为第1个参数是指定的this,所以只截取第1个之后的参数
+    const args = Array.prototype.slice.call(arguments, 1);
+    const fNOP = function () {};			// 创建一个空对象
+    const fBound = function() {
+      // 这时的arguments是指bind返回的函数传入的参数
+      const bindArgs = Array.prototype.slice.call(arguments);
+      // 当作为构造函数时，this 指向实例, 当作为普通函数时，this 指向 window, 绑定context
+      return self.apply( this instanceof fNOP ? this : context, args.concat(bindArgs) );
+    };
+    // 修改返回函数的 prototype 为绑定函数的 prototype，实例就可以继承绑定函数的原型中的值
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+    return fBound;
+  }
+
+  var value = 2;
+
+  var foo = {
+    value: 1
+  };
+
+  function bar(name, age) {
+    return {
+      value: this.value,
+      name: name,
+      age: age
+    }
+  };
+
+  var bindFoo = bar.myBind(foo, "Jack");
+
+  console.log(new bindFoo(20));
 </script>
