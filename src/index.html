@@ -17,10 +17,45 @@
         <div id="child2-2"></div>
     </div>
     <div id="child3"></div>
+    <input type="text" id="inp" />
 </div>
 </body>
 </html>
-<script type="application/javascript">
+<!-- <script>
+  // 防抖，n秒内事件只会执行一次，n秒内再次触发，重新计算时间
+  const debounce = (fn, ms) => {
+    let timeout = null;
+    return function() {
+      clearTimeout(timeout);  // 每次触发清除上一次设置的timeout
+      timeout = setTimeout(() => { // 创建新的timeout保证，重新计算时间
+        fn.apply(this, arguments);
+      }, ms || 500)
+    }
+  }
+  const f = (e) => {
+    console.log(e.target);
+  }
+  const inp = document.getElementById('inp');
+  inp.addEventListener('input', debounce(f, 500)); 
+
+  // 节流， n秒内只会执行一次
+  const throttle = (fn, ms) => {
+    let canRun = true;
+    return function() {
+      if (!canRun) return;
+      canRun = false;
+      setTimeout(() => {
+        fn.apply(this, arguments);
+        canRun = true;
+      }, ms || 500)
+    }
+  }
+  const sayHi = (e) => {
+    console.log(e);
+  }
+  window.addEventListener('resize', throttle(sayHi, 2000));
+</script> -->
+<!-- <script type="application/javascript">
 //   function deepTraversal(node,nodeList) {
 //     if (node) {
 //       nodeList.push(node);
@@ -40,24 +75,42 @@ function deepTraversal2(node) {
   if (node) {
     stack.push(node);
     while (stack.length) {
-      console.log('stack', stack);
       let item = stack.shift();
-      console.log('item', item);
       let children = item.children;
-      console.log('children', children);
       nodes.push(item);
-      console.log('nodesss', nodes);
       // 队列，先进先出
       for (let i = 0; i < children.length; i++) {
         stack.push(children[i])
       }
-      console.log('==============================')
+    }
+  }
+  return nodes
+}
+
+let deepTraversal3 = (node) => {
+  let stack = []
+  let nodes = []
+  if (node) {
+    // 推入当前处理的node
+    stack.push(node)
+    while (stack.length) {
+      let item = stack.pop()
+      let children = item.children
+      nodes.push(item)
+      // node = [] stack = [parent]
+      // node = [parent] stack = [child3,child2,child1]
+      // node = [parent, child1] stack = [child3,child2,child1-2,child1-1]
+      // node = [parent, child1-1] stack = [child3,child2,child1-2]
+      for (let i = children.length - 1; i >= 0; i--) {
+        stack.push(children[i])
+      }
     }
   }
   return nodes
 }
   var root2 = document.getElementById('root')
   console.log(deepTraversal2(root2))
+  console.log(deepTraversal3(root2))
   // Function.prototype.myCall = function(context) {
   //   // context 运行时的上下文
   //   console.log(context);
@@ -142,4 +195,93 @@ function deepTraversal2(node) {
   var bindFoo = bar.myBind(foo, "Jack");
 
   console.log(new bindFoo(20));
+</script>-->
+
+<script>
+  Function.prototype.myCall = function(context) {
+    context = context ? Object(context) : window;
+    context.fn = this;
+    const args = [...arguments].slice(1);
+    const r = context.fn(...args);
+    delete context.fn;
+    return r;
+  }
+
+  Function.prototype.myApply = function(context) {
+    context = context ? Object(context) : window;
+    context.fn = this;
+    const args = arguments[1];
+    let r;
+    if (!args) {
+      r = context.fn();
+    } else {
+      r = context.fn(...args);
+    }
+    delete context.fn;
+    return r;
+  }
+
+
+  function Parent(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  function Children(name, age) {
+    Parent.myCall(this, name, age);
+    this.childrens = 2;
+  }
+
+  console.log(new Children('Bob', 30));
+
+  const arr = [1,2];
+  const arr2 = [3,4];
+  arr.push.myApply(arr, arr2);
+  console.log(arr);
+
+
+  function debounce(fn, time) {
+    time = time || 500;
+    if (!fn) {
+      throw new Error('function is required!');
+    }
+    let timeout = null;
+    return function () {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        fn.apply(this, arguments);
+      }, time);
+    }
+  }
+
+  
+  function throttle(fn, time) {
+    time = time || 500;
+    if (!fn) {
+      throw new Error('function is required!');
+    }
+    let canRun = true;
+    return function() {
+      if (!canRun) return;
+      canRun = false;
+      setTimeout(() => {
+        fn.apply(this, arguments);
+        canRun = true;
+      }, time)
+    }
+  }
+
+  function say() { console.log('debounce is success'); }
+  const inp = document.getElementById('inp');
+  inp.addEventListener('input', debounce(say, 2000)); // 防抖
+
+  function say2() { console.log('throttle is success'); }
+  window.addEventListener('resize', throttle(say2, 1000)); // 节流
+
+  // 编写一个程序将数组扁平化去并除其中重复部分数据，最终得到一个升序且不重复的数组
+  var arrs = [ [1, 2, 2], [3, 4, 5, 5], [6, 7, 8, 9, [11, 12, [12, 13, [14] ] ] ], 10];
+  console.log(Array.from(new Set(arrs.flat(Infinity))).sort((a,b)=>{ return a-b}));
+
+
+
 </script>
